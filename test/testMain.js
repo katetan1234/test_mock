@@ -36,9 +36,9 @@ describe('test listBranches', function(){
   .get("/repos/testuser/Hello-World/branches")///repos/:owner/:repo/branches
   .reply(200, JSON.stringify(data) );
 
-  describe('#()', function(){
+  describe('test istBranches return json', function(){
     // TEST CASE
-   	it('should return 3 branches', function(done) {
+   	it('should return 1 branches', function(done) {
 
       github.listBranches("testuser", "Hello-World").then(function (results) 
       {
@@ -73,9 +73,9 @@ describe('test createRepo', function(){
       return JSON.stringify(repo);
    });
 
-  describe('#()', function(){
+  describe('test createRepo json', function(){
     // TEST CASE
-    it('it should return ', function(done) {
+    it('should return createRepo json', function(done) {
 
       return github.createRepo("Hello-World", "This your first repo!").then(function (results)
       {
