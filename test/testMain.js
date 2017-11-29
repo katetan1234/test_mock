@@ -3,7 +3,7 @@ var expect = chai.expect;
 var nock = require("nock");
 // var request = require('request');
 
-var github = require("../github.js");
+var github = require("../temp.js");
 
 // Load mock data
 var data = require("./branch.json")
@@ -16,6 +16,11 @@ var urlRoot = "https://api.github.com";
 ///////////////////////////
 // TEST SUITE FOR MOCHA
 ///////////////////////////
+// listBranches(owner, repo);
+// createRepo();
+// editRepo(owner, repo);
+// createIssue(owner, repo);
+// listReactions(owner, repo, issueNumber);
 
 
 describe('test listBranches', function(){
@@ -27,11 +32,14 @@ describe('test listBranches', function(){
   .get("/repos/testuser/Hello-World/branches")///repos/:owner/:repo/branches
   .reply(200, JSON.stringify(data) );
 
+  var owner = "testuser";
+  var repo = "Hello-World";
+
   describe('test istBranches return json', function(){
     // TEST CASE
    	it('should return 1 branches', function(done) {
 
-      github.listBranches("testuser", "Hello-World").then(function (results) 
+      github.listBranches(owner, repo).then(function (results) 
       {
         expect(results.length).to.equal(1);
         done();
@@ -43,6 +51,7 @@ describe('test listBranches', function(){
       return github.listBranches("testuser", "Hello-World").then(function (results) 
       {
         expect(results[0].name).to.equal("master");
+        // done();
       });
     });
   });
@@ -60,15 +69,16 @@ describe('test createRepo', function(){
   .reply(200,function(uri,request) { // the request name cannot be null
     if(request.name === null)
       return "error";
-    else
+    else{
       return JSON.stringify(repo);
+    }
    });
 
   describe('test createRepo json', function(){
     // TEST CASE
     it('should return createRepo json', function(done) {
 
-      return github.createRepo("Hello-World", "This your first repo!").then(function (results)
+      return github.createRepo().then(function (results)
       {
         expect(results[0].id).to.equal(1296269);
         // console.log(results);
@@ -82,34 +92,40 @@ describe('test createRepo', function(){
 
 
 describe('test createIssue', function(){
-  var owner = "octocat";
-  var repoName = "Hello-World";
-  var mockService = nock("https://api.github.com")
-  .persist()
-  .matchHeader('Authorization', /[\w]+/)
-  .post('/repos/'+owner+'/'+repoName+'/issues')
-  .reply(200,function(uri,request) {
-    if(request.title === null)
-      return "error";
-    else
-      return JSON.stringify(issue);
-   });
+  try{
+    var owner = "octocat";
+    var repoName = "Hello-World";
+    var mockService = nock("https://api.github.com")
+    .persist()
+    .matchHeader('Authorization', /[\w]+/)
+    .post('/repos/'+owner+'/'+repoName+'/issues')
+    .reply(201,function(uri,request) {
+      if(request.title === null){
+        throw "error";
+      }else{
+        if(request.has_wiki == null || request.has_wiki != true){
+          throw "The request do not have the character of has_wiki";
+        }
+        return JSON.stringify(issue);
+      }
+     });
+    describe('test createIssue json', function(){
+      it('should return createIssue json', function(done) {
 
-  describe('test createIssue json', function(){
-    // TEST CASE
-    it('should return createIssue json', function(done) {
+        return github.createIssue(owner, repoName).then(function (results)
+        {
+          expect(results[0].title).to.equal("Found a bug");
 
-      return github.createIssue(owner, repoName).then(function (results)
-      {
-        expect(results[0].title).to.equal("Found a bug");
-        // console.log(results);
+          done();
 
-        done();
-
+        });
       });
     });
+  } catch(e){
+    console.log(e.message);
+  }
   });
-});
+
 
 describe('test editRepo', function(){
 
@@ -142,6 +158,7 @@ describe('test editRepo', function(){
 });
 
 describe('test listReaction', function(){
+  // url: urlRoot + "/repos/" + owner + "/" + repo + "/issues/" + issueNumber + "/reactions",
   var owner = "octocat";
   var repo = "Hello-World";
   var number = 1;
@@ -155,7 +172,7 @@ describe('test listReaction', function(){
     // TEST CASE
     it('test the id', function(done) {
 
-      return github.listReaction(owner, repo, number).then(function (results)
+      return github.listReactions(owner, repo, number).then(function (results)
       {
         expect(results[0].id).to.equal(1);
 
