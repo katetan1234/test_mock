@@ -192,7 +192,7 @@ function editRepo(owner, repo)
 
 }
 
-function listReaction(owner, repo, number)
+function listReactions(owner, repo, number)
 {
 	var options = {
 		url: urlRoot+'/repos/'+owner+'/'+repo+'/issues'+'/'+number+'/'+'reactions',
@@ -224,4 +224,4 @@ exports.listBranches = listBranches;
 exports.createRepo = createRepo;
 exports.createIssue = createIssue;
 exports.editRepo = editRepo;
-exports.listReaction = listReaction;
+exports.listReactions = listReactions;

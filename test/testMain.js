@@ -22,39 +22,35 @@ var urlRoot = "https://api.github.com";
 // createIssue(owner, repo);
 // listReactions(owner, repo, issueNumber);
 
-
 describe('test listBranches', function(){
 
-  // MOCK SERVICE
-  var mockService = nock("https://api.github.com")
-  .matchHeader('Authorization', /[\w]+/)
-  .persist() // This will persist mock interception for lifetime of program.
-  .get("/repos/testuser/Hello-World/branches")///repos/:owner/:repo/branches
-  .reply(200, JSON.stringify(data) );
+    var owner = "testuser";
+    var repo = "Hello-World";
 
-  var owner = "testuser";
-  var repo = "Hello-World";
-
-  describe('test istBranches return json', function(){
-    // TEST CASE
-   	it('should return 1 branches', function(done) {
-
-      github.listBranches(owner, repo).then(function (results) 
-      {
-        expect(results.length).to.equal(1);
-        done();
-      });
+    describe('test ListBranches', function(){
+      // TEST CASE
+      var mockService = nock("https://api.github.com", {
+      reqheaders: {
+        "User-Agent": "EnableIssues",
+        "content-type": "application/json"
+      }
+    })
+    .matchHeader('Authorization', /[\w]+/)
+    .persist() // This will persist mock interception for lifetime of program.
+    .get("/repos/testuser/Hello-World/branches")///repos/:owner/:repo/branches
+    .reply(200, function(uri,request){
+      return JSON.stringify(data);
     });
+     it('should return 1 branches', function(done) {
 
-    // TEST CASE...
-    it('the first branch should be branch1', function() {
-      return github.listBranches("testuser", "Hello-World").then(function (results) 
-      {
-        expect(results[0].name).to.equal("master");
-        // done();
+        github.listBranches(owner, repo).then(function (results) 
+        {
+          expect(results.length).to.equal(1);
+          done();
+        });
       });
-    });
-  });
+     });
+
 });
 
 describe('test createRepo', function(){
@@ -67,11 +63,13 @@ describe('test createRepo', function(){
   .matchHeader('Authorization', /[\w]+/)
   .post("/user/repos")
   .reply(200,function(uri,request) { // the request name cannot be null
-    if(request.name === null)
-      return "error";
-    else{
-      return JSON.stringify(repo);
-    }
+    var regex_name = /"name"/;
+      if(regex_name.test(request)){
+        // console.log(request);
+      }else{
+        throw "the name of request cannot be null";
+      }
+    return JSON.stringify(repo);    
    });
 
   describe('test createRepo json', function(){
@@ -100,14 +98,14 @@ describe('test createIssue', function(){
     .matchHeader('Authorization', /[\w]+/)
     .post('/repos/'+owner+'/'+repoName+'/issues')
     .reply(201,function(uri,request) {
-      if(request.title === null){
-        throw "error";
+      var regex_name = /"title"/;
+      if(regex_name.test(request)){
+        // console.log(request);
       }else{
-        if(request.has_wiki == null || request.has_wiki != true){
-          throw "The request do not have the character of has_wiki";
-        }
-        return JSON.stringify(issue);
+        throw "the name of request cannot be null";
       }
+      return JSON.stringify(issue);
+      
      });
     describe('test createIssue json', function(){
       it('should return createIssue json', function(done) {
@@ -136,10 +134,19 @@ describe('test editRepo', function(){
   .persist()
   .matchHeader('Authorization', /[\w]+/)
   .patch('/repos/'+owner+'/'+repoName)
-  .reply(200,function(uri,request) {
-    if(request.name === null)
-      return "error";
-    else
+  .reply(200,function(uri,request) {  
+      var regex_name = /"name"/;
+      if(regex_name.test(request)){
+        // console.log(request);
+      }else{
+        throw "the name of request cannot be null";
+      }
+      var regex_wiki = /"has_wiki":true/
+      if(regex_wiki.test(request)){
+        console.log(request);
+      }else{
+        throw "The request do not have the character of has_wiki or the has_wiki is not true";
+      }
       return JSON.stringify(repo);
    });
 
